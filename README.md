@@ -1,6 +1,8 @@
 # Web-API-Server-Example-01
 Web API 伺服器 範例01
 
+![image](https://github.com/HsiupoYeh/Web-API-Server-Example-01/blob/main/ScreenShot/ScreenShot_001.png)  
+
 ## 開發環境:
 - Windows 7 SP1 64bit 繁體中文版
 - Embarcadero® C++Builder 10.2 Version 25.0.28979.1978
