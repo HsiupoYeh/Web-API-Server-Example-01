@@ -13,7 +13,64 @@ Web API 伺服器 範例01
 - 允許程式通過防火牆。
 
 ## 注意事項:
-- 本專案有使用IdHTTPServer元件
+- 本專案有使用IdHTTPServer元件。其中OnCommandGet方法是以多執行緒處理，在C++Builder的VCL中並不是執行緒安全的(thread-safe)，主要是指主執行緒控制的UI元件隨時可被其他執行緒操作，但是不保證同時只有一個執行緒操作這個元件，最終可能造成程式發生不可預期的錯誤。因此，可以使用Indy提供的「TIdSync」和「TIdNotify」的類別(class)，將操作UI的工作包裝為同步或非同步的工作，委託給主執行緒執行，以達到執行緒安全的設計。片段範例程式碼如下:
+    ```cpp
+    //--------------------------------------------------------------------------
+    // 使用Indy提供的「TIdSync」和「TIdNotify」的類別(class)必須自行引入標頭檔案
+    #include <IdSync.hpp>
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // TIdSync類別的特色是同步處理(阻塞式)，會將工作交給主執行緒，等待主執行緒完成後才返回控制權。
+    class TAddMemo1Sync : public TIdSync
+    {
+    	protected:
+    		String str;
+    		void __fastcall DoSynchronize()
+    		{
+    			Form1->Memo1->Lines->Add(str);
+    		}
+    	public:
+    		__fastcall TAddMemo1Sync(const String &s) : TIdSync(), str(s) {}
+    		static void DoIt(const String &s)
+    		{
+    			TAddMemo1Sync *sync = new TAddMemo1Sync(s);
+    			sync->Synchronize();
+    			delete sync;
+    		}
+    };
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // TIdNotify類別的特色是非同步處理(非阻塞式)，會將工作放到主執行緒排程，立刻返回控制權。
+    class TAddMemo1Notify : public TIdNotify
+    {
+    	protected:
+    		String str;
+    		void __fastcall DoNotify()
+    		{
+    			Form1->Memo1->Lines->Add(str);
+    		}
+    	public:
+    		__fastcall TAddMemo1Notify(const String &s) : TIdNotify(), str(s) {}
+    		static void DoIt(const String &s)
+    		{
+    			TAddMemo1Notify *notify = new TAddMemo1Notify(s);
+    			notify->Notify();
+    			delete notify;
+    		}
+    };
+    //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------   
+    void __fastcall TForm1::IdHTTPServer1CommandGet(TIdContext *AContext, TIdHTTPRequestInfo *ARequestInfo,
+          TIdHTTPResponseInfo *AResponseInfo)
+    {
+        //阻塞式呼叫 
+        TAddMemo1Sync::DoIt("some text...");
+        
+        //非阻塞式呼叫 
+        TAddMemo1Notify::DoIt("some text...");
+    }
+    //--------------------------------------------------------------------------
+    ```
 
 ## 開發紀錄:
 1. 選擇32bit版本開發(因為目前沒用到64bit才能執行的功能，記憶體需求也不大)。
