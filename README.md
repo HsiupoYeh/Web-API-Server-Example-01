@@ -71,7 +71,19 @@ Web API 伺服器 範例01
     }
     //--------------------------------------------------------------------------
     ```
-
+- IdHTTPServer元件的IdHTTPServer1CommandGet方法:
+    ```cpp
+    //--
+    ARequestInfo->RawHTTPCommand //HTTP連線中原始文字資料，例如:「GET /api/v1/hello?a=1&b=3 HTTP/1.0」
+    ARequestInfo->Command // HTTP方法，例如:「GET」
+    ARequestInfo->URI // 伺服器端網址，例如:「/api/v1/hello」
+    ARequestInfo->RemoteIP // 用戶端IP，例如:「192.168.0.1」
+    //--
+    ARequestInfo->QueryParams //查詢參數文字資料，例如「a=1&b=3」
+    ARequestInfo->Params->Values["a"] //參數a的字串值
+    ARequestInfo->Params->Values["a"].IsEmpty() //參數a的字串是否為空
+    
+    ```
 ## 開發紀錄:
 1. 選擇32bit版本開發(因為目前沒用到64bit才能執行的功能，記憶體需求也不大)。
     + **1.1 按下「New->VCL Forms Application - C++ Builder」。並確認「Target Platforms」是「Win32」。**
